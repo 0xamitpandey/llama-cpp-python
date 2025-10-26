@@ -1,28 +1,24 @@
-# Use Python 3.13 base image
-FROM python:3.13-slim
+# Use full Debian base for C++ build
+FROM python:3.13-bullseye
 
-# Install system build tools
+# Install build tools
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
+    libpthread-stubs0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy repo into container
+# Copy repo contents
 COPY . /app
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Upgrade pip, setuptools, wheel
+RUN pip install --upgrade pip setuptools wheel
 
-# Install repo (builds shared library)
+# Install llama-cpp-python (builds shared library)
 RUN pip install .
 
-# Expose the port Render will use
-ENV PORT 10000
-EXPOSE 10000
-
-# Start server
-CMD ["python", "-m", "llama_cpp.server"]
+# Expose p
