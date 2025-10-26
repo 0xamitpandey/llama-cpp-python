@@ -1,7 +1,6 @@
-# Use full Debian base for C++ build
 FROM python:3.13-bullseye
 
-# Install build tools
+# Install system build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -13,11 +12,8 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy repo contents
-COPY . /app
-
-# Initialize git submodules
-RUN git submodule update --init --recursive
+# Clone your public repo and submodules
+RUN git clone --recurse-submodules https://github.com/0xamitpandey/llama-cpp-python.git . 
 
 # Upgrade pip, setuptools, wheel
 RUN pip install --upgrade pip setuptools wheel
