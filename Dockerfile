@@ -1,6 +1,6 @@
 FROM python:3.13-bullseye
 
-# Install system build dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -12,18 +12,18 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Clone your public repo and submodules
-RUN git clone --recurse-submodules https://github.com/0xamitpandey/llama-cpp-python.git . 
+# Clone your public repo with submodules
+RUN git clone --recurse-submodules https://github.com/0xamitpandey/llama-cpp-python.git .
 
-# Upgrade pip, setuptools, wheel
+# Upgrade pip and build tools
 RUN pip install --upgrade pip setuptools wheel
 
-# Install llama-cpp-python (builds shared library)
-RUN pip install .
+# Install llama-cpp-python and server dependencies
+RUN pip install . uvicorn fastapi
 
-# Expose port Render will use
+# Expose port
 ENV PORT 10000
 EXPOSE 10000
 
-# Start server
-CMD ["python", "-m", "llama_cpp.server"]
+# Start the server using uvicorn
+CMD ["uvicorn", "llama_cpp.server:app", "--host", "0.0.0.0", "--port", "10000"]
