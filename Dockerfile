@@ -1,29 +1,33 @@
-FROM python:3.13-bullseye
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    git \
-    ninja-build \
-    libpthread-stubs0-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Use official Python image
+FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
 
-# Clone your public repo with submodules
-RUN git clone --recurse-submodules https://github.com/0xamitpandey/llama-cpp-python.git .
+# Install system dependencies for building llama_cpp
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        curl \
+        wget \
+        ninja-build \
+        libopenblas-dev \
+        && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and build tools
-RUN pip install --upgrade pip setuptools wheel
+# Copy your repo into the container
+COPY . .
 
-# Install llama-cpp-python and server dependencies
-RUN pip install . uvicorn fastapi
+# Ensure git submodules are initialized
+RUN git submodule update --init --recursive || true
 
-# Expose port
-ENV PORT 10000
-EXPOSE 10000
+# Upgrade pip and install the package with server extras
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install .[server]
 
-# Start the server using uvicorn
-CMD ["uvicorn", "llama_cpp.server:app", "--host", "0.0.0.0", "--port", "10000"]
+# Expose default server port
+EXPOSE 8000
+
+# Start the server (replace with your model path)
+CMD ["python", "-m", "llama_cpp.server", "--host", "0.0.0.0", "--model", "models/7B/llama-model.gguf"]
