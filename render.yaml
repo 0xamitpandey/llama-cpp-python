@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: llama-cpp-python
+    env: python
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: |
+      pip install --upgrade pip
+      pip install .
+    startCommand: python server.py   # <-- your entry script
+    autoDeploy: true
